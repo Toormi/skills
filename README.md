@@ -4,7 +4,7 @@
 
 English | [中文](README.zh-CN.md)
 
-Review Preflight is a Agent skill that turns a pull request into a concise HTML briefing for human reviewers. It helps reviewers understand the intent, navigate the most important files first, and focus attention on likely risk areas before opening the full diff.
+Review Preflight is a Agent skill that turns a pull request into a concise, self-contained HTML briefing file for human reviewers. It helps reviewers understand the intent, navigate the most important files first, and focus attention on likely risk areas before opening the full diff.
 
 It is not an AI code reviewer. It does not approve, reject, or claim that code is correct. Its job is to reduce reviewer cold start.
 
@@ -25,7 +25,7 @@ The goal is to move reviewers from "reading code to understand context" toward "
 
 ## What It Generates
 
-The skill produces an HTML Review Preflight report. The layout is intentionally flexible rather than a fixed template, so the report can adapt to the PR.
+The skill saves an HTML Review Preflight report to a file. The layout is intentionally flexible rather than a fixed template, so the report can adapt to the PR.
 
 Typical content includes:
 
@@ -39,7 +39,7 @@ Typical content includes:
 - Questions for the author
 - Human review checklist
 
-The HTML can use richer presentation patterns such as metric strips, route timelines, risk matrices, cards, tables, callouts, and checkbox lists when they help the reviewer scan faster.
+The HTML can use richer presentation patterns such as metric strips, route timelines, risk matrices, annotated diff excerpts, module maps, cards, tables, callouts, tabs, collapsible sections, and checkbox lists when they help the reviewer scan faster.
 
 ## What It Is Not
 
@@ -102,7 +102,7 @@ Diff:
 ...
 ```
 
-The output should be HTML only. By default it should be an HTML fragment rooted in a clear container. If a standalone page or visual preview is requested, it may produce a complete HTML document with inline CSS.
+The output should be saved as HTML only. By default it should be a complete, self-contained `.html` file that opens directly in a browser, with inline CSS and no external build step. If you need a specific destination, include the output path in the request.
 
 ## Review Philosophy
 
