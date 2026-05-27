@@ -73,7 +73,7 @@ The minimum useful input is a PR title, changed files, and diff.
 Install the skill from this repository:
 
 ```bash
-npx skills add Toormi/toormi-skills --skills review-preflight
+npx skills add Toormi/skills --skills review-preflight
 ```
 
 ## Usage

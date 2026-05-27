@@ -13,7 +13,7 @@ Each skill lives in its own directory and includes a `SKILL.md` file with the in
 ## Repository Structure
 
 ```text
-toormi-skills/
+skills/
 ├── README.md
 └── skills/
     └── review-preflight/
