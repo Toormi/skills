@@ -1,6 +1,6 @@
 ---
 name: review-preflight
-description: Use when asked to prepare reviewers for a pull request, summarize or visualize PR changes for review, triage a large or AI-generated PR, reduce reviewer cold start, create a PR preflight report, save an HTML review brief, draw change impact graphs or before/after PR diagrams, or help an author improve a PR before requesting review.
+description: Use when asked to prepare reviewers for a pull request, summarize or visualize PR changes for review, triage a large or AI-generated PR, reduce reviewer cold start, create a PR preflight report, save an HTML review brief, visualize changed workflows, sequences, architecture, data flows, or before/after PR diagrams, or help an author improve a PR before requesting review.
 ---
 
 # Review Preflight
@@ -22,10 +22,11 @@ Prepare a human reviewer before they inspect a PR diff. Do not replace code revi
    - Group changes by system area or responsibility instead of listing files mechanically.
    - Identify the core files or modules where behavior, contracts, data, security, or tests actually change.
 
-3. Visualize the changed shape when it helps review.
-   - Identify changed entities and relationships: files, modules, classes, functions, API endpoints, database tables, queues, events, external services, and tests.
-   - Use before/after diagrams when the previous and new structures can be reasonably inferred.
-   - Keep diagrams focused on the core review path or risk path, usually 5-12 nodes.
+3. Identify changed flow lines before drawing diagrams.
+   - Inspect the diff for user workflows, request lifecycles, event or job sequences, state transitions, data paths, dependency paths, deployment paths, and test or validation paths affected by the PR.
+   - Treat each meaningful path as a review line with a trigger, participants, key decisions or handoffs, and an outcome.
+   - Decide which lines deserve diagrams. Use multiple small diagrams when the PR changes multiple independent lines; merge trivial lines when one diagram would be clearer.
+   - For each diagrammed line, show what changed from before to after, including changed nodes and changed edges. Do not draw a generic file graph if the review question is really about a workflow, sequence, state transition, or architecture path.
    - Skip complex diagrams for tiny copy, config, or test-name changes; use a lightweight change map instead.
 
 4. Plan the review route.
@@ -74,30 +75,42 @@ Pay extra attention when a PR touches:
 - Configuration, infrastructure, deployment, CI, permissions, or environment-specific behavior.
 - Tests that are absent, only happy-path, lack regression cases, or do not cover the risky behavior changed.
 
-## Visual Change Maps
+## Flow-Line Visualizations
 
-Use visualizations only when they make review faster or clearer. Prefer one or two small review-focused diagrams over a large system map.
+Use visualizations only when they make review faster or clearer. Prefer several small line-specific diagrams over one large system map when a PR changes multiple workflows, sequences, or architectural paths.
 
-Choose the diagram by the review question the PR raises:
+Start with a flow-line inventory before drawing:
 
-| PR change | Best diagram | Use it to answer |
+1. Name each affected line using real PR terms, such as `checkout payment authorization`, `webhook retry handling`, `invoice status lifecycle`, `search request path`, `migration backfill path`, or `admin role permission check`.
+2. For each line, note the trigger, participants, changed files or symbols, before behavior, after behavior, and reviewer risk.
+3. Select 1-5 lines to diagram. Prefer the lines that carry behavior, data consistency, compatibility, security, operational, or test risk.
+4. If more than five lines matter, include an inventory table for all lines and diagram only the highest-risk or most representative ones.
+
+Choose the diagram by the line being reviewed:
+
+| Changed line | Best diagram | Use it to answer |
 | --- | --- | --- |
-| Modules, files, components, dependencies, or call relationships changed | Change impact graph / dependency graph | What changed and where does impact spread? |
-| Function call chains or execution paths changed | Call graph | Which callers and callees should be reviewed first? |
-| Business flow, conditions, branching, retries, fallback, or error handling changed | Flowchart | How does the logic run now? |
-| Clients, APIs, services, queues, webhooks, RPC, HTTP, or third-party interactions changed | Sequence diagram | How does the request or event move through participants? |
+| Business workflow, branching, retries, fallback, validation, or error handling changed | Flowchart | How does this line run before and after? |
+| Clients, APIs, services, queues, webhooks, RPC, HTTP, or third-party interactions changed | Sequence diagram | How does the request or event move through participants before and after? |
+| Modules, files, components, dependencies, services, or runtime boundaries changed | Architecture / dependency diagram | What responsibilities or dependencies moved, appeared, or disappeared? |
+| Function call chains or execution paths changed | Call graph | Which callers and callees changed on this line? |
 | Classes, interfaces, fields, methods, inheritance, or design patterns changed | Class diagram | How did object structure or responsibilities change? |
 | Statuses, lifecycle rules, approval states, payment states, or task states changed | State diagram | Which states and transitions changed? |
-| Tables, fields, relationships, migrations, or data model changed | ER/data model diagram | What data shape changed and how do entities relate? |
+| Tables, fields, relationships, migrations, backfills, or data transformations changed | ER / data-flow diagram | What data shape or movement changed? |
+| Build, release, feature flag, environment, CI, permission, or infrastructure path changed | Deployment / operations flow diagram | What runtime or rollout path changed? |
 
 Visual rules:
 
+- Include a compact "line inventory" before or beside the diagrams when more than one line is affected.
+- Use before/after panels for each line when previous behavior can be inferred. If only the after state is visible, label the before side as "not visible in provided diff" rather than inventing it.
+- Add a short delta caption per diagram: what changed, why it matters for review, and which files or symbols support the diagram.
 - Mark additions with `+` and green, removals with `-` and red, modifications with `~` and amber, and unchanged context with gray.
 - Mark changed edges as well as changed nodes when a relationship, call, dependency, state transition, or data flow changed.
 - Use real names from the PR: file paths, class names, functions, services, endpoints, tables, events, jobs, queues, or commands.
 - Avoid vague labels such as "Logic", "Handler", "Data", or "Thing" unless the diff lacks better evidence.
 - Label inferred relationships as inferred, likely, appears, or needs confirmation.
-- Do not draw a full system architecture diagram unless the PR itself changes architecture.
+- Do not draw a full system architecture diagram unless the PR itself changes architecture or runtime boundaries.
+- Do not substitute a raw file-diff graph for a flow-line diagram when the PR changed behavior, timing, sequencing, state, data movement, or cross-service interaction.
 
 ## HTML Output
 
@@ -109,11 +122,12 @@ Use semantic, readable HTML and choose a presentation that fits the PR. Do not c
 - Metric strip for changed files, core files, risky paths, tests touched, migration changes, or external integrations.
 - Review route timeline showing the recommended order of files or modules to inspect.
 - Change map grouped by area, displayed as cards, columns, a table, or nested lists depending on density.
-- Visual change graph with before/after panels when relationships, flow, data shape, or state transitions matter.
+- Flow-line visualizations with one or more before/after diagrams when workflows, sequences, architecture paths, data movement, or state transitions matter.
+- Flow-line inventory table when several user workflows, request paths, event paths, state lifecycles, or data paths are touched.
 - Legend for added, removed, modified, and unchanged nodes or edges when a graph is included.
 - Risk matrix grouped by high, medium, and low risk, with each item stating what to verify.
 - Annotated diff excerpts with severity badges, margin notes, and jump links when specific lines or hunks drive review risk.
-- Module or request-flow maps using inline SVG, CSS boxes and arrows, or simple diagrams when relationships matter more than file order.
+- Module, architecture, sequence, workflow, state, or request-flow maps using inline SVG, CSS boxes and arrows, or simple diagrams when relationships matter more than file order.
 - Before/after panels for behavior, API contracts, performance, rollout, or user-visible effects.
 - Collapsible sections for dense file tours, long test plans, assumptions, or lower-priority risks.
 - Tabs or segmented views for reviewer roles, risk categories, or changed subsystems when one long page would flatten important structure.
@@ -129,7 +143,7 @@ Keep the information architecture stable even when the layout varies:
 2. Review complexity.
 3. Core changes.
 4. Change map.
-5. Visual change graph, when useful.
+5. Flow-line inventory and before/after visualizations, when useful.
 6. Suggested review route.
 7. Risk areas.
 8. Missing or weak tests.
@@ -167,4 +181,4 @@ If the user names a reviewer role, tune the briefing:
 
 ## Quality Bar
 
-A good Review Preflight report makes the reviewer say: "I know what this PR is trying to do, what changed shape, where to start, what to distrust, and what to ask." If the output is merely a file summary or a decorative diagram, revise it toward review navigation, before/after relationships, and risk-focused human judgment.
+A good Review Preflight report makes the reviewer say: "I know what this PR is trying to do, which flow lines changed, how they changed before versus after, where to start, what to distrust, and what to ask." If the output is merely a file summary or a decorative diagram, revise it toward review navigation, before/after relationships, and risk-focused human judgment.
