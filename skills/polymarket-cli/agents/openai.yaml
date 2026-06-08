@@ -1,0 +1,4 @@
+interface:
+  display_name: "Polymarket CLI"
+  short_description: "Use Polymarket CLI for markets and trading"
+  default_prompt: "Use $polymarket-cli to research Polymarket markets with JSON output."
