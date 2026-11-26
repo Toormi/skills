@@ -24,9 +24,9 @@ The goal is to move reviewers from "reading code to understand context" toward "
 
 ## What It Generates
 
-Open the saved HTML brief and start with the linked hunk. The opening describes the old and new behavior, explains why that hunk matters, and asks one question you can answer by reading it. For local changes, the brief points to the file and symbol or heading.
+The first link in the saved HTML opens the hunk that decides the behavior. The opening gives you a concrete case to check and explains how its outcome affects compatibility, a test expectation, or an implementation choice. For local changes, the brief points to the file and symbol or heading.
 
-Follow another link when a caller, test, or migration answers a different question. Each concern appears at the place where you can check it. Claims about behavior point to the revisions inspected. An inference identifies the evidence still needed. A directory link correction can take a single sentence.
+Follow another link when a caller, test, or migration answers a different question. Each concern appears at the place where you can check it. For a whole GitHub PR, the old behavior comes from the merge base and the new behavior from the inspected head. For a single commit, the comparison starts at the parent shown in its diff. An inference identifies the evidence still needed. A directory link correction can take a single sentence.
 
 ## Flow-Line Visualizations
 
@@ -111,6 +111,8 @@ The output should be saved as HTML only. By default it should be a complete, sel
 ## Review Philosophy
 
 Start where the behavior changes. A caller can explain how execution reaches that point, and a test can show exactly which outcome is asserted. The report ends once the reader has enough evidence to continue the review.
+
+When comparing two versions with readers, choose the intended hunk before the session and give each reader one brief per PR. Record where their first click actually lands and whether it reaches that hunk, the elapsed time until they can point to it, and whether they can accurately describe the old and new behavior. Record a session without a click separately.
 
 ## Future of Review
 
