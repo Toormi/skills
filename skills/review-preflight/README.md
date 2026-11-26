@@ -4,9 +4,7 @@
 
 English | [中文](README.zh-CN.md)
 
-Review Preflight is a Agent skill that turns a pull request into a concise, self-contained HTML briefing file for human reviewers. It helps reviewers understand the intent, see the shape of the change, navigate the most important files first, and focus attention on likely risk areas before opening the full diff.
-
-It is not an AI code reviewer. It does not approve, reject, or claim that code is correct. Its job is to reduce reviewer cold start.
+Review Preflight turns a pull request into a self-contained HTML brief for a human reviewer. The opening tells you what changes under which condition, links to the first diff worth reading, and gives you a question to answer there. The reviewer makes the final judgment.
 
 ## Why This Exists
 
@@ -26,28 +24,13 @@ The goal is to move reviewers from "reading code to understand context" toward "
 
 ## What It Generates
 
-The skill saves an HTML Review Preflight report to a file. The layout is intentionally flexible rather than a fixed template, so the report can adapt to the PR.
+The first link in the saved HTML opens the hunk that decides the behavior. The opening gives you a concrete case to check and explains how its outcome affects compatibility, a test expectation, or an implementation choice. For local changes, the brief points to the file and symbol or heading.
 
-Typical content includes:
-
-- PR intent
-- Review complexity
-- Core changes
-- Change map by area
-- Flow-line inventory and before/after diagrams when useful
-- Suggested review route
-- Risk areas
-- Missing or weak tests
-- Questions for the author
-- Human review checklist
-
-The HTML can use richer presentation patterns such as metric strips, route timelines, risk matrices, annotated diff excerpts, flow-line inventories, before/after diagrams, module maps, cards, tables, callouts, tabs, collapsible sections, and checkbox lists when they help the reviewer scan faster.
+Follow another link when a caller, test, or migration answers a different question. Each concern appears at the place where you can check it. For a whole GitHub PR, the old behavior comes from the merge base and the new behavior from the inspected head. For a single commit, the comparison starts at the parent shown in its diff. An inference identifies the evidence still needed. A directory link correction can take a single sentence.
 
 ## Flow-Line Visualizations
 
-Review Preflight should first identify which workflows, sequences, states, data paths, dependency paths, or operational paths the PR changes. Treat each meaningful path as a review line, then choose the right visual form for that line.
-
-It can include multiple diagrams directly in the HTML report when different lines changed:
+The brief can contain zero diagrams. When a diagram helps answer a specific review question, it appears beside the relevant step. For example, if the order of a transaction commit and a retry is spread across two components, a sequence diagram can make the order visible.
 
 | Changed line                                              | Diagram                                 |
 | --------------------------------------------------------- | --------------------------------------- |
@@ -60,7 +43,7 @@ It can include multiple diagrams directly in the HTML report when different line
 | Tables, fields, migrations, transformations               | ER or data-flow diagram                 |
 | Release, CI, feature flag, environment, or infra paths     | Deployment or operations flow diagram   |
 
-Each diagram should show the line before and after when that can be inferred. Diagrams should stay small, use real code names, mark added/removed/modified nodes and edges, and focus on the paths a human should inspect first.
+Diagrams use real code names and mark changed nodes and edges. They show the before/after difference where the evidence supports it and label inferred relationships.
 
 ## What It Is Not
 
@@ -87,7 +70,7 @@ The skill works best with:
 - Test changes
 - Relevant repository context
 
-The minimum useful input is a PR title, changed files, and diff.
+A pasted diff is enough to start. A partial patch limits which behavior the brief can establish.
 
 ## Installation
 
@@ -127,14 +110,9 @@ The output should be saved as HTML only. By default it should be a complete, sel
 
 ## Review Philosophy
 
-Review Preflight is built around four layers:
+Start where the behavior changes. A caller can explain how execution reaches that point, and a test can show exactly which outcome is asserted. The report ends once the reader has enough evidence to continue the review.
 
-1. Understanding: help the reviewer grasp what the PR is.
-2. Visualization: help the reviewer see which workflow or timing lines changed, and how each line changed before versus after.
-3. Navigation: help the reviewer decide where to start.
-4. Skepticism: help the reviewer know what to verify.
-
-The most valuable parts are the visualization, navigation, and skepticism layers. A generic PR summary is easy to ignore; a change graph, review route, and risk briefing can change how the reviewer spends attention.
+When comparing two versions with readers, choose the intended hunk before the session and give each reader one brief per PR. Record where their first click actually lands and whether it reaches that hunk, the elapsed time until they can point to it, and whether they can accurately describe the old and new behavior. Record a session without a click separately.
 
 ## Future of Review
 

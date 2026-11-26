@@ -8,7 +8,7 @@ Each skill lives in its own directory and includes a `SKILL.md` file with the in
 
 | Skill                                          | Description                                                                                                              |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| [`review-preflight`](skills/review-preflight/) | Generates an HTML briefing with review route, risk focus, and visual change graphs to help humans prepare for PR review. |
+| [`review-preflight`](skills/review-preflight/) | Generates an HTML brief that points to the first diff worth reading and explains what to verify there. |
 
 ## Using a Skill
 
