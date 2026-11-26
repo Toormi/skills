@@ -1,184 +1,49 @@
 ---
 name: review-preflight
-description: Use when asked to prepare reviewers for a pull request, summarize or visualize PR changes for review, triage a large or AI-generated PR, reduce reviewer cold start, create a PR preflight report, save an HTML review brief, visualize changed workflows, sequences, architecture, data flows, or before/after PR diagrams, or help an author improve a PR before requesting review.
+description: Prepare a human reviewer to open the most informative diff first. Use for a PR preflight, an HTML review brief, a guided review of a large or AI-generated change, a visualization of a changed workflow, or an author preparing to request review. Accept a PR URL, local changes, or a pasted diff.
 ---
 
 # Review Preflight
 
-## Purpose
+Save a short, self-contained HTML briefing in the user's language. Help the reviewer choose what to read and what to verify. Leave approval, rejection, and findings to the actual code review.
 
-Prepare a human reviewer before they inspect a PR diff. Do not replace code review, approve changes, reject changes, or claim the code is correct. Convert PR evidence into a short HTML briefing that helps the reviewer understand context, see the shape of the change, choose where to look first, and focus skepticism on the highest-value areas.
+## Prepare the first screen
 
-## Workflow
+1. **State the change.** In one or two sentences, name the condition, what happened before, and what happens now. For documentation or configuration, describe what readers see or what the setting controls. If a side of the comparison is unknown, say which detail is missing.
+2. **Give the reviewer a place to start.** Immediately link to the first worthwhile diff hunk and name the file and symbol (or heading). Make that link the primary action. Choose the place that decides the behavior or contract. It may be one line in a small file. Explain why this spot is decisive and give one question the reader can answer there.
+3. **Continue only for a distinct decision.** Add the next location when a caller, a test, a migration, or another path answers a question the first stop leaves open. Attach the supporting evidence, risk, or author question to that stop. Mention each concern once. End the report when the next step is clear. A small correction can take one linked sentence.
 
-1. Gather the best available PR context.
-   - Prefer PR title, description, changed files, diff, commit messages, linked issue or ticket, test changes, and relevant repository context.
-   - If the user provides a PR URL or current branch, use available GitHub/GitLab/local git tools to collect metadata and diff context.
-   - If only local changes are available, compare against the likely base branch and use changed files, diff, and recent commits.
-   - If key inputs are missing, proceed with what is available and state the limitation in the report.
+Keep the change, first location, reason, and question visible together before any statistics, diagrams, or background. No item quotas or required panels. Match the route to the requested reviewer role or, for an author, to the decisions to clarify before review.
 
-2. Build the reviewer's mental model.
-   - Infer what the PR appears to be trying to accomplish.
-   - Group changes by system area or responsibility instead of listing files mechanically.
-   - Identify the core files or modules where behavior, contracts, data, security, or tests actually change.
+## Establish the evidence
 
-3. Identify changed flow lines before drawing diagrams.
-   - Inspect the diff for user workflows, request lifecycles, event or job sequences, state transitions, data paths, dependency paths, deployment paths, and test or validation paths affected by the PR.
-   - Treat each meaningful path as a review line with a trigger, participants, key decisions or handoffs, and an outcome.
-   - Decide which lines deserve diagrams. Use multiple small diagrams when the PR changes multiple independent lines; merge trivial lines when one diagram would be clearer.
-   - For each diagrammed line, show what changed from before to after, including changed nodes and changed edges. Do not draw a generic file graph if the review question is really about a workflow, sequence, state transition, or architecture path.
-   - Skip complex diagrams for tiny copy, config, or test-name changes; use a lightweight change map instead.
+- For a hosted PR, collect the description, base and head revisions, changed files, and relevant hunks. For a local branch, compare with the merge base of the intended target. Include working-tree changes when requested. For a pasted or partial diff, work within the supplied evidence.
+- Trace the behavior that determines the first stop. Read enough of the old and new implementation to establish the change. Follow a direct caller if it chooses the path, and inspect a related test's setup and assertions if they bear on the question. Treat the PR description as a statement of intent.
+- Link the first stop to the changed lines in the diff when available. For supporting evidence, use commit-pinned source lines at the inspected head for additions and at the base or parent for removed behavior. Check the path, revision, side, and line numbers. If a hunk link is unavailable, use a verified source permalink and identify the changed symbol. For local or pasted changes, give the exact path and symbol or heading, plus a line or a short hunk excerpt when known. Avoid fabricated URLs or coordinates.
+- State demonstrated behavior plainly. For an inference, name the missing caller, configuration, test assertion, or other evidence that would settle it. For example, write “The changed test asserts the first delivery. Does a second delivery produce a second record?” Scope a coverage claim to the tests inspected. If the patch is truncated, identify the affected path and explain how that limits the conclusion.
 
-4. Plan the review route.
-   - Recommend an order that minimizes cold start and maximizes risk discovery.
-   - Usually prioritize central business logic, public interfaces, schema or migration changes, security-sensitive paths, integration boundaries, then tests.
-   - Explain why each stop belongs in the route.
+## Decide whether to draw
 
-5. Surface concrete risks and uncertainty.
-   - Frame risks as things the reviewer should verify, not as final findings.
-   - Prefer specific paths, functions, data flows, and behaviors over generic warnings.
-   - Distinguish "not observed in the provided diff" from "definitely missing."
+Write the review question first. If a sentence and a code link answer it, use **zero diagrams**. When a reviewer needs to compare ordering, branching, or relationships across locations, place a small diagram beside the route step it explains.
 
-6. Design and save the HTML presentation.
-   - Save the report to a `.html` file before the final response.
-   - Use the user's requested path when provided; otherwise write a clearly named file such as `review-preflight-<pr-or-branch-slug>.html` in the current working directory, adding a timestamp if needed to avoid overwriting an existing file.
-   - Generate a complete, self-contained HTML document by default because the report is meant to open directly in a browser.
-   - Use an HTML fragment only if the user explicitly asks for embeddable markup.
-   - Adapt the layout to the PR instead of forcing every report into the same rigid section order.
+For example, “Does a retry occur before or after the transaction commits?” can justify a sequence diagram. Use a state diagram for a changed transition or a dependency or data-flow diagram for a changed boundary. Show the relevant before/after difference using real symbols and labeled edges. Mark any inferred step. Use text or symbols as well as color, and link the supporting code at that stop.
 
-7. Produce a concise Review Preflight report.
-   - Match the user's language unless they request otherwise.
-   - Keep the main report readable in one pass.
-   - Default to 3-5 core changes, 3-7 risk points, 3-5 author questions, and 5-10 checklist items.
+## Example openings
 
-## Evidence Rules
+**A rule change across three files** (commit `4187514`)
 
-- Use cautious language: "appears", "suggests", "likely", "needs confirmation", "not visible in the provided diff".
-- Do not say "safe to merge", "approved", "correct", "no issues", or "this is secure".
-- Do not invent issue context, production behavior, ownership, test coverage, or runtime facts.
-- If the diff is too large or incomplete, say what was inspected and where confidence is limited.
-- If the PR description is weak or missing, call that out as review friction.
-- If the user wants an actual code review after the briefing, switch to normal review behavior after the preflight report.
+> When preparing a PR brief, the agent previously chose a diagram based on the review question. The revised instructions first inventory changed flows, then select one to five to draw.
+>
+> **Start at the [diagram selection rule in `SKILL.md`](https://github.com/Toormi/skills/commit/41875142f8e84ddfcf3e26a03fcff0f977b45458#diff-f506559efe0492a8586f5a5ec09e303398d9edb5f08cb80ab907fbd91f2963a9R86).** This line introduces a minimum absent from the [previous rule](https://github.com/Toormi/skills/blob/bf941ab4befb6379cc6fd84fcab3b3496a14aafa/skills/review-preflight/SKILL.md#L77-L83), while [the opening of the same section](https://github.com/Toormi/skills/blob/41875142f8e84ddfcf3e26a03fcff0f977b45458/skills/review-preflight/SKILL.md#L78-L87) makes diagrams conditional. Can the agent skip a diagram for a one-line copy edit?
+>
+> Then compare the [English](https://github.com/Toormi/skills/commit/41875142f8e84ddfcf3e26a03fcff0f977b45458#diff-6e7004987fc3ddcdd74eb0fdf502303663630a26bfdf459a762d49701a971d9e) and [Chinese](https://github.com/Toormi/skills/commit/41875142f8e84ddfcf3e26a03fcff0f977b45458#diff-626d85f8e01c0c1e0b35f8eebba5241ad4f493953ce51b8973448a92879a85dc) READMEs. Do both describe the selection rule the reviewer expects the agent to follow?
 
-## Risk Heuristics
+**A directory link correction** (commit `0fb7c73`). Use one sentence for the whole brief.
 
-Pay extra attention when a PR touches:
+> The [root README link](https://github.com/Toormi/skills/commit/0fb7c7395e02d5c7539a926274b25e881baa7bf1#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5R11) now points to `skills/review-preflight/` instead of `review-preflight/` after the move — does it open the directory containing `SKILL.md`, and do the English and Chinese directory trees match that path?
 
-- Authentication, authorization, roles, sessions, tokens, policies, or permissions.
-- Money, billing, payments, refunds, invoices, tax, currency, or decimal precision.
-- Data migrations, schema changes, default values, nullable columns, backfills, or data retention.
-- Concurrency, locks, transactions, idempotency, retries, queues, or race-prone state transitions.
-- External integrations, webhooks, third-party APIs, payment gateways, email, SMS, or async workers.
-- Error handling, partial failure, rollback, timeout, retry, cleanup, or observability.
-- Backward compatibility, public APIs, event schemas, old clients, feature flags, or existing data.
-- User-controlled input, file upload, SQL, command execution, serialization, redirects, or secrets.
-- Configuration, infrastructure, deployment, CI, permissions, or environment-specific behavior.
-- Tests that are absent, only happy-path, lack regression cases, or do not cover the risky behavior changed.
+## Save the HTML
 
-## Flow-Line Visualizations
+Use the requested path or `review-preflight-<pr-or-branch>.html` in the working directory. Choose a fresh name if needed to avoid overwriting an earlier report. Produce a complete HTML document unless the user explicitly requests a fragment. Use a title, UTF-8 and viewport metadata, semantic headings and links, inline CSS, and inline SVG or CSS for diagrams. Escape supplied text and code. Keep the brief usable offline with no scripts, fonts, or assets to download. Evidence links may open the code host.
 
-Use visualizations only when they make review faster or clearer. Prefer several small line-specific diagrams over one large system map when a PR changes multiple workflows, sequences, or architectural paths.
-
-Start with a flow-line inventory before drawing:
-
-1. Name each affected line using real PR terms, such as `checkout payment authorization`, `webhook retry handling`, `invoice status lifecycle`, `search request path`, `migration backfill path`, or `admin role permission check`.
-2. For each line, note the trigger, participants, changed files or symbols, before behavior, after behavior, and reviewer risk.
-3. Select 1-5 lines to diagram. Prefer the lines that carry behavior, data consistency, compatibility, security, operational, or test risk.
-4. If more than five lines matter, include an inventory table for all lines and diagram only the highest-risk or most representative ones.
-
-Choose the diagram by the line being reviewed:
-
-| Changed line | Best diagram | Use it to answer |
-| --- | --- | --- |
-| Business workflow, branching, retries, fallback, validation, or error handling changed | Flowchart | How does this line run before and after? |
-| Clients, APIs, services, queues, webhooks, RPC, HTTP, or third-party interactions changed | Sequence diagram | How does the request or event move through participants before and after? |
-| Modules, files, components, dependencies, services, or runtime boundaries changed | Architecture / dependency diagram | What responsibilities or dependencies moved, appeared, or disappeared? |
-| Function call chains or execution paths changed | Call graph | Which callers and callees changed on this line? |
-| Classes, interfaces, fields, methods, inheritance, or design patterns changed | Class diagram | How did object structure or responsibilities change? |
-| Statuses, lifecycle rules, approval states, payment states, or task states changed | State diagram | Which states and transitions changed? |
-| Tables, fields, relationships, migrations, backfills, or data transformations changed | ER / data-flow diagram | What data shape or movement changed? |
-| Build, release, feature flag, environment, CI, permission, or infrastructure path changed | Deployment / operations flow diagram | What runtime or rollout path changed? |
-
-Visual rules:
-
-- Include a compact "line inventory" before or beside the diagrams when more than one line is affected.
-- Use before/after panels for each line when previous behavior can be inferred. If only the after state is visible, label the before side as "not visible in provided diff" rather than inventing it.
-- Add a short delta caption per diagram: what changed, why it matters for review, and which files or symbols support the diagram.
-- Mark additions with `+` and green, removals with `-` and red, modifications with `~` and amber, and unchanged context with gray.
-- Mark changed edges as well as changed nodes when a relationship, call, dependency, state transition, or data flow changed.
-- Use real names from the PR: file paths, class names, functions, services, endpoints, tables, events, jobs, queues, or commands.
-- Avoid vague labels such as "Logic", "Handler", "Data", or "Thing" unless the diff lacks better evidence.
-- Label inferred relationships as inferred, likely, appears, or needs confirmation.
-- Do not draw a full system architecture diagram unless the PR itself changes architecture or runtime boundaries.
-- Do not substitute a raw file-diff graph for a flow-line diagram when the PR changed behavior, timing, sequencing, state, data movement, or cross-service interaction.
-
-## HTML Output
-
-Save the report as HTML only. Do not provide alternate report formats unless the user is asking to edit the skill itself or debug the generated HTML. In the final response, report the saved file path and a short summary of what it contains; do not paste the full HTML unless the user asks.
-
-Use semantic, readable HTML and choose a presentation that fits the PR. Do not copy a fixed template. Treat HTML as a browser-native review artifact, not a markdown document wrapped in tags.
-
-- Summary header with PR title, review complexity, confidence, changed-file count, and the most important caveat.
-- Metric strip for changed files, core files, risky paths, tests touched, migration changes, or external integrations.
-- Review route timeline showing the recommended order of files or modules to inspect.
-- Change map grouped by area, displayed as cards, columns, a table, or nested lists depending on density.
-- Flow-line visualizations with one or more before/after diagrams when workflows, sequences, architecture paths, data movement, or state transitions matter.
-- Flow-line inventory table when several user workflows, request paths, event paths, state lifecycles, or data paths are touched.
-- Legend for added, removed, modified, and unchanged nodes or edges when a graph is included.
-- Risk matrix grouped by high, medium, and low risk, with each item stating what to verify.
-- Annotated diff excerpts with severity badges, margin notes, and jump links when specific lines or hunks drive review risk.
-- Module, architecture, sequence, workflow, state, or request-flow maps using inline SVG, CSS boxes and arrows, or simple diagrams when relationships matter more than file order.
-- Before/after panels for behavior, API contracts, performance, rollout, or user-visible effects.
-- Collapsible sections for dense file tours, long test plans, assumptions, or lower-priority risks.
-- Tabs or segmented views for reviewer roles, risk categories, or changed subsystems when one long page would flatten important structure.
-- Author question panel for concrete follow-up questions.
-- Missing-test panel highlighting absent, weak, or uncertain coverage.
-- Checklist with actual checkbox inputs when the output is intended for a browser; use plain list items when checkbox controls would be awkward in the target surface.
-- Callouts for limited context, weak PR description, incomplete diff, or assumptions.
-- Copy/export affordances when useful, such as a "copy checklist" or "copy author questions" button implemented with small inline JavaScript.
-
-Keep the information architecture stable even when the layout varies:
-
-1. PR intent.
-2. Review complexity.
-3. Core changes.
-4. Change map.
-5. Flow-line inventory and before/after visualizations, when useful.
-6. Suggested review route.
-7. Risk areas.
-8. Missing or weak tests.
-9. Questions for the author.
-10. Human review checklist.
-
-HTML rules:
-
-- Escape user-provided text, file paths, branch names, and code snippets correctly.
-- Use `<code>` for file paths, commands, symbols, and short literals.
-- Use headings, sections, lists, tables, cards, badges, or callouts to improve scanability.
-- Keep CSS inline in a `<style>` block and avoid external assets, build steps, CDNs, or network dependencies.
-- Use inline SVG or CSS-based diagrams for saved reports; Mermaid syntax may be included in a collapsible source section, but the HTML must remain understandable without fetching Mermaid from a CDN.
-- Include `<html>`, `<head>`, `<meta charset="utf-8">`, responsive viewport metadata, `<title>`, and `<body>` for saved reports.
-- Make the layout responsive and readable on laptop and tablet widths.
-- Use color, spacing, borders, and typography to create hierarchy, but keep the visual design quiet enough for code review work.
-- Use small inline JavaScript only for interaction that improves review, such as tabs, filters, details expansion, or copy buttons.
-- Make the report compact enough to read before opening the diff.
-- Avoid decorative visuals that do not help reviewer decisions.
-
-## HTML Effectiveness Guidance
-
-Use the principles from "The unreasonable effectiveness of HTML" as inspiration: https://thariqs.github.io/html-effectiveness/. Self-contained browser files can make agent output more readable by using spatial layout, color, interaction, diagrams, and structured navigation instead of a flat wall of text. For code review, prefer artifacts that reveal shape at a glance: annotated diffs, file risk maps, module diagrams, reviewer-focused PR writeups, jump links, and focused next steps.
-
-Do not make the HTML merely prettier. Use richer presentation only when it makes review decisions faster, clearer, or more concrete.
-
-## Role-Specific Use
-
-If the user names a reviewer role, tune the briefing:
-
-- Backend reviewer: emphasize contracts, transactions, data consistency, integrations, state machines, and tests.
-- Security reviewer: emphasize authorization, input boundaries, secrets, data exposure, abuse cases, and negative tests.
-- Tech lead: emphasize design direction, coupling, migration strategy, operational risk, future extensibility, and rollout.
-- Author preparing a PR: phrase findings as changes to make before requesting review, including description gaps, missing tests, and unclear decisions.
-
-## Quality Bar
-
-A good Review Preflight report makes the reviewer say: "I know what this PR is trying to do, which flow lines changed, how they changed before versus after, where to start, what to distrust, and what to ask." If the output is merely a file summary or a decorative diagram, revise it toward review navigation, before/after relationships, and risk-focused human judgment.
+Before handing it over, read just the opening. Can a reviewer tell what changed, open the decisive location, and say what to check there without scrolling? Check the evidence links or local locators, remove repeated concerns, and return the saved file path with a short summary.
